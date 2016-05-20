@@ -1,0 +1,697 @@
+<center> <h1>Exploratory Data Analysis of the White Wine  
+based on physicochemical properties</h1> </center>
+<center>by</center>
+<center>Oleg Leyzerov</center>
+  
+#1. Citation
+This dataset is public available for research. The details are described in [Cortez et al., 2009].
+
+P. Cortez, A. Cerdeira, F. Almeida, T. Matos and J. Reis. Modeling wine preferences by data mining from physicochemical properties. In Decision Support Systems, Elsevier, 47(4):547-553. ISSN: 0167-9236.
+
+Available at: [@Elsevier] http://dx.doi.org/10.1016/j.dss.2009.05.016 [Pre-press (pdf)] http://www3.dsi.uminho.pt/pcortez/winequality09.pdf [bib] http://www3.dsi.uminho.pt/pcortez/dss09.bib
+
+#2. Abstract
+White wine has existed for at least 2500 years. It has accompanied economic development and colonized every country whose inhabitants are wine drinkers: Europe, America, Oceania, although less systematically in Africa and Asia due to climate and religious reasons.  
+Celebrated by writers, poets, singers and painters, white wine is used as an Apéritif during the meal, with dessert, or as a refreshing drink between meals.[1]  
+  
+The sommelier - subject-matter expert on wine - learns and practices hard to understand the topic. I'm going to gain some knowledge of wine by conducting the exploratory data analysis of the data set with the physicochemical and quality of the wine. 
+  
+#3. Dataset
+This data set contains 4,898 white wines with 11 variables on quantifying the chemical properties of each wine. At least 3 wine experts rated the quality of each wine, providing a rating between 0 (very bad) and 10 (very excellent).  
+  
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+
+# ggplot2 for plots
+library(ggplot2)
+# GGally for the matrix plot
+library(GGally)
+# gridExtra for visualizing multiple plots in one output
+library(gridExtra)
+```
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+wine <- read.csv("wineQualityWhites.csv")
+str(wine)
+```
+All the independent variables are numerics and the quality - expert review - is integer.
+If might be helpful for the further exploration to operate quality as a factor variable, so I createthe new variable and call it quality.factor.  
+
+```{r echo=FALSE}
+wine$quality.factor <- factor(wine$quality)
+str(wine$quality.factor)
+```
+```{r echo=FALSE}
+summary(wine[,c(2:14)])
+```
+The summary function let us dig into data. Most of the variables, except Residual sugar and alcohol, have means and medians pretty close to each other. At the same time their max values are far from the third quartile (except pH). I guess the distributions of this variables might be normal with outliers on the right tail.  
+Despite the fact that experts were able to grade the quality of the wine between 0 and 10, wine in the dataset has the quality scores from 3 to 9.
+
+To get more feeling about the data, I'm going to visualize the histrograms of the varibles in the next section.
+
+# Univariate Plots Section
+The following grid visualize the distributions of provided variables.  
+Red line represents the median, green - the mean, doted lines are first and third quartiles.  
+
+```{r echo=FALSE, Univariate_Plots}
+h1 <- qplot(x = quality, 
+      data = wine, 
+      color = I("black"),
+      binwidth = 1,
+      fill = I("orange")) +
+  xlab("Quality") + 
+  ggtitle('Count by Quality') +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  geom_vline(aes(xintercept = median(quality), na.rm = T), color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(quality), na.rm = T), color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(quality,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(quality,0.75)), linetype = 2)
+
+
+
+h2 <- ggplot(aes(x = fixed.acidity), data = wine) + 
+  geom_histogram(binwidth = 0.5,
+                 color = I("black"), fill = I("orange")) +
+  xlab("Fixed Acidity, g / dm^3") + 
+  ggtitle('Count by Fixed Acidity') +
+  scale_x_continuous(breaks = seq(4, 10.5, 1)) +
+  geom_vline(aes(xintercept = median(fixed.acidity), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(fixed.acidity), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(fixed.acidity,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(fixed.acidity,0.75)), linetype = 2)
+
+h3 <- qplot(x = volatile.acidity, 
+            data = wine, 
+            binwidth = 0.05, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Volatile Acidity, g / dm^3") + 
+  ggtitle('Count by Volatile Acidity') +
+  scale_x_continuous(breaks = seq(0, 0.9, 0.1)) +
+  geom_vline(aes(xintercept = median(volatile.acidity), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(volatile.acidity), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(volatile.acidity,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(volatile.acidity,0.75)), linetype = 2)
+
+h4 <- qplot(x = citric.acid, 
+            data = wine, 
+            binwidth = 0.1, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Citric Acid, g / dm^3") + 
+  ggtitle('Count by Citric Acid') +
+  scale_x_continuous(breaks = seq(0, 1, 0.25)) +
+  geom_vline(aes(xintercept = median(citric.acid), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(citric.acid), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(citric.acid,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(citric.acid,0.75)), linetype = 2)
+
+h5 <- qplot(x = residual.sugar, 
+            data = wine, 
+            binwidth = 2.5, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Residual Sugar, g / dm^3") + 
+  ggtitle('Count by Residual Sugar') + 
+  scale_x_continuous(breaks = seq(0, 20, 5)) +
+  geom_vline(aes(xintercept = median(residual.sugar), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(residual.sugar), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(residual.sugar,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(residual.sugar,0.75)), linetype = 2)
+
+h6 <- qplot(x = chlorides, 
+            data = wine, 
+            binwidth = 0.01, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Chlorides, g / dm^3") + 
+  ggtitle('Count by Chlorides') +
+  scale_x_continuous(breaks = seq(0, 0.2, .05)) +
+  geom_vline(aes(xintercept = median(chlorides), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(chlorides), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(chlorides,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(chlorides,0.75)), linetype = 2)
+
+
+h7 <- qplot(x = free.sulfur.dioxide, 
+            data = wine, 
+            binwidth = 10, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Free Sulfur Dioxide, g / dm^3") + 
+  ggtitle('Count by Free Sulfur Dioxide') +
+  scale_x_continuous(breaks = seq(0, 100, 20)) +
+  geom_vline(aes(xintercept = median(free.sulfur.dioxide), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(free.sulfur.dioxide), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(free.sulfur.dioxide,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(free.sulfur.dioxide,0.75)), linetype = 2)
+
+  
+h8 <- qplot(x = total.sulfur.dioxide, 
+            data = wine, 
+            binwidth = 25, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Total Sulfur Dioxide, g / dm^3") + 
+  ggtitle('Count by Total Sulfur Dioxide') +
+  scale_x_continuous(breaks = seq(0, 300, 50)) +
+  geom_vline(aes(xintercept = median(total.sulfur.dioxide), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(total.sulfur.dioxide), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(total.sulfur.dioxide,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(total.sulfur.dioxide,0.75)), linetype = 2)
+
+
+h9 <- qplot(x = density, 
+            data = wine, 
+            binwidth = 0.0025, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Density, g / dm^3") + 
+  ggtitle('Count by Density') +
+  scale_x_continuous(breaks = seq(0.985, 1.01, .01)) +
+  geom_vline(aes(xintercept = median(density), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(density), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(density,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(density,0.75)), linetype = 2)
+
+
+h10 <- qplot(x = pH, 
+            data = wine, 
+            binwidth = 0.05, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("pH") + 
+  ggtitle('Count by pH') +
+  scale_x_continuous(breaks = seq(2.7, 3.6, .1)) +
+  geom_vline(aes(xintercept = median(pH), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(pH), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(pH,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(pH,0.75)), linetype = 2)
+
+h11 <- qplot(x = sulphates, 
+            data = wine, 
+            binwidth = 0.05, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Sulphates, g / dm^3") + 
+  ggtitle('Count by Sulphates') +
+  scale_x_continuous(breaks = seq(.3, .9, .1)) +
+  geom_vline(aes(xintercept = median(sulphates), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(sulphates), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(sulphates,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(sulphates,0.75)), linetype = 2)
+
+h12 <- qplot(x = alcohol, 
+            data = wine, 
+            binwidth = 0.5, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Alcohol, % by volume") + 
+  ggtitle('Count by Alcohol') +
+  scale_x_continuous(breaks = seq(8, 14, .5)) +
+  geom_vline(aes(xintercept = median(alcohol), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(alcohol), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(alcohol,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(alcohol,0.75)), linetype = 2)
+  
+grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12)  
+
+```
+  
+Based on the first histogram, most of the wine in the dataset has quality 6 following by 5 and 7. There are quite a few observations with quality scores 3, 4, 8 and 9. Now I'm going to keep looking at the variables as it is but consider to create a new quality variable to union wine with rare quality scores later on.  
+As assumed most of the variables (except Residual Sugar and Alcohol) represent simmetrical distribution with the right tails. Residual sugar is distribution is positively skewed, has a peak around 2 g / dm^3 and a long right tail.   
+For better visualization I trim the long tails and transformthe x axis of Residual Sugar to log10:  
+
+```{r echo=FALSE, Univariate_Plots2}
+h1 <- qplot(x = quality, 
+      data = wine, 
+      color = I("black"),
+      binwidth = 1,
+      fill = I("orange")) +
+  xlab("Quality") + 
+  ggtitle('Count by Quality') +
+  scale_x_continuous(breaks = seq(3,9,1)) +
+  geom_vline(aes(xintercept = median(quality), na.rm = T), color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(quality), na.rm = T), color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(quality,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(quality,0.75)), linetype = 2)
+  
+h2 <- ggplot(aes(x = fixed.acidity), data = wine) + 
+  geom_histogram(binwidth = 0.5,
+                 color = I("black"), fill = I("orange")) +
+  xlab("Fixed Acidity, g / dm^3") + 
+  ggtitle('Count by Fixed Acidity') +
+  scale_x_continuous(breaks = seq(4, 10.5, 0.5)) +
+  geom_vline(aes(xintercept = median(fixed.acidity), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(fixed.acidity), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(fixed.acidity,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(fixed.acidity,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(4.5,9.5))
+
+h3 <- qplot(x = volatile.acidity, 
+            data = wine, 
+            binwidth = 0.05, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Volatile Acidity, g / dm^3") + 
+  ggtitle('Count by Volatile Acidity') +
+  scale_x_continuous(breaks = seq(0, 0.9, 0.1)) +
+  geom_vline(aes(xintercept = median(volatile.acidity), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(volatile.acidity), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(volatile.acidity,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(volatile.acidity,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(.1,.5))
+
+h4 <- qplot(x = citric.acid, 
+            data = wine, 
+            binwidth = 0.1, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Citric Acid, g / dm^3") + 
+  ggtitle('Count by Citric Acid') +
+  scale_x_continuous(breaks = seq(0, 1, 0.25)) +
+  geom_vline(aes(xintercept = median(citric.acid), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(citric.acid), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(citric.acid,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(citric.acid,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(0,0.75))
+
+h5 <- qplot(x = residual.sugar, 
+            data = wine, 
+            binwidth = .1, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("log10 of Residual Sugar, g / dm^3") + 
+  ggtitle('Count by log10 of Residual Sugar') +
+  scale_x_log10(breaks = seq(1, 10, 1)) +
+  geom_vline(aes(xintercept = median(residual.sugar), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(residual.sugar), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(residual.sugar,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(residual.sugar,0.75)), linetype = 2)
+
+h6 <- qplot(x = chlorides, 
+            data = wine, 
+            binwidth = 0.01, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Chlorides, g / dm^3") + 
+  ggtitle('Count by Chlorides') +
+  scale_x_continuous(breaks = seq(0, 0.2, .05)) +
+  geom_vline(aes(xintercept = median(chlorides), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(chlorides), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(chlorides,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(chlorides,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(0.01,.08))
+
+
+h7 <- qplot(x = free.sulfur.dioxide, 
+            data = wine, 
+            binwidth = 10, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Free Sulfur Dioxide, g / dm^3") + 
+  ggtitle('Count by Free Sulfur Dioxide') +
+  scale_x_continuous(breaks = seq(0, 100, 20)) +
+  geom_vline(aes(xintercept = median(free.sulfur.dioxide), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(free.sulfur.dioxide), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(free.sulfur.dioxide,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(free.sulfur.dioxide,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(0,80))
+
+  
+h8 <- qplot(x = total.sulfur.dioxide, 
+            data = wine, 
+            binwidth = 25, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Total Sulfur Dioxide, g / dm^3") + 
+  ggtitle('Count by Total Sulfur Dioxide') +
+  scale_x_continuous(breaks = seq(0, 300, 50)) +
+  geom_vline(aes(xintercept = median(total.sulfur.dioxide), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(total.sulfur.dioxide), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(total.sulfur.dioxide,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(total.sulfur.dioxide,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(50,250))
+
+
+h9 <- qplot(x = density, 
+            data = wine, 
+            binwidth = 0.0025, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Density, g / dm^3") + 
+  ggtitle('Count by Density') +
+  scale_x_continuous(breaks = seq(0.985, 1.01, .01)) +
+  geom_vline(aes(xintercept = median(density), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(density), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(density,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(density,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(.989,1.001))
+
+
+h10 <- qplot(x = pH, 
+            data = wine, 
+            binwidth = 0.05, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("pH") + 
+  ggtitle('Count by pH') +
+  scale_x_continuous(breaks = seq(2.7, 3.6, .1)) +
+  geom_vline(aes(xintercept = median(pH), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(pH), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(pH,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(pH,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(2.8,3.6))
+
+h11 <- qplot(x = sulphates, 
+            data = wine, 
+            binwidth = 0.05, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Sulphates, g / dm^3") + 
+  ggtitle('Count by Sulphates') +
+  scale_x_continuous(breaks = seq(.3, .9, .1)) +
+  geom_vline(aes(xintercept = median(sulphates), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(sulphates), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(sulphates,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(sulphates,0.75)), linetype = 2) +
+  coord_cartesian(xlim = c(.3,.8))
+
+h12 <- qplot(x = alcohol, 
+            data = wine, 
+            binwidth = 0.5, 
+            color = I("black"), 
+            fill = I("orange")) +
+  xlab("Alcohol, % by volume") + 
+  ggtitle('Count by Alcohol') +
+  scale_x_continuous(breaks = seq(8, 14, .5)) +
+  geom_vline(aes(xintercept = median(alcohol), na.rm = T), 
+             color="red", linetype = 1) +
+  geom_vline(aes(xintercept = mean(alcohol), na.rm = T), 
+             color="blue", linetype = 1) +
+  geom_vline(aes(xintercept = quantile(alcohol,0.25)), linetype = 2) +
+  geom_vline(aes(xintercept = quantile(alcohol,0.75)), linetype = 2)
+  
+grid.arrange(h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12)  
+
+
+```
+  
+This visualization identifies bi-modal character of the distribution with peaks around 1.5 and 8 g/dm^3.  
+
+
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+There are 4898 observations of wine with 12 variables (11 numeric physicochemical properties and one integer expert review).  
+Other observations:  
+* Most of the wine have quality 5, 6, 7
+* Most of the wines have pH between 2.80 and 3.47
+* Median alcohol amount is 10.40% 
+* Average sugar amount is 6.391 g/dm^3 with the maximum 65.80
+
+### What is/are the main feature(s) of interest in your dataset?  
+The main features in the data set are quality, alcohol, residual.sugar, density.
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+Sulfur dioxide, citric acid, clorides.
+
+
+### Did you create any new variables from existing variables in the dataset?
+Yes, I'm going to create new quality variable quality.factor2 to union rare wine with rare quality scores (3, 4, 5 union in "low"; 6 to "average",  7, 8, 9 union in "high")
+
+```{r}
+wine$quality.factor2 <- ifelse(wine$quality == 3 | 
+                          wine$quality == 4 | 
+                          wine$quality == 5, "low", 
+                        ifelse(wine$quality == 6, "average", "high"))
+wine$quality.factor2 <- factor(wine$quality.factor2, levels=c("low", "average", "high"))
+```
+New variable have 3 groups of wine quality with relatively big amount of observations in each group.
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+I log-transformed the right skewed Residual Sugar distribution. The tranformed distribution appears bimodal with the peaking around 1 or so and again around 8 g/dm^3.  
+
+# Bivariate Plots Section
+```{r echo=FALSE, Bivariate_Plots}
+wine_samp <- wine[,c(2:13)]
+ggpairs(wine_samp, axisLabels = 'internal')
+```
+  
+We can see the correlations between variables:
+
+* quality and alcohol
+* quality and density
+* alcohol and density
+* alcohol and total sulfur dioxide
+* alcohol and sugar
+* pH and fixed acidity
+* density and sugar, etc.
+* alcohol vs. density
+  
+# Bivariate Analysis 
+Now I would like to have a quick look on the boxplot visualization of our variables against the quality factor and try to get some relatioships:
+
+```{r echo=FALSE}
+b1 <- ggplot(aes(x = quality.factor, y = fixed.acidity), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim=c(4.5,10))
+b2 <- ggplot(aes(x = quality.factor, y = volatile.acidity), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.1, 0.7))
+b3 <- ggplot(aes(x = quality.factor, y = citric.acid), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 0.6))
+b4 <- ggplot(aes(x = quality.factor, y = residual.sugar), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 15))
+b5 <- ggplot(aes(x = quality.factor, y = chlorides), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.015, 0.075)) 
+b6 <- ggplot(aes(x = quality.factor, y = free.sulfur.dioxide), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 80))
+b7 <- ggplot(aes(x = quality.factor, y = total.sulfur.dioxide), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(20, 300))
+b8 <- ggplot(aes(x = quality.factor, y = density), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.987, 1.002))
+b9 <- ggplot(aes(x = quality.factor, y = pH), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(2.8, 3.6))
+b10 <- ggplot(aes(x = quality.factor, y = sulphates), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.15, 0.8))
+b11 <- ggplot(aes(x = quality.factor, y = alcohol), data = wine) +
+  geom_boxplot(aes(fill = quality.factor), outlier.shape = NA)
+grid.arrange(b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11)
+```
+  
+The data variablity of wine with the quality score 9 is really small. It might be because the amount of observations is really small. Here is not to many clear correlations but seems that with the increase of quality alcohol is increasing and density is decreasing.  
+Let's try the same visualization but with the quality.factor2:
+
+```{r echo=FALSE}
+b1 <- ggplot(aes(x = quality.factor2, y = fixed.acidity), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim=c(4.5,10))
+b2 <- ggplot(aes(x = quality.factor2, y = volatile.acidity), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.1, 0.7))
+b3 <- ggplot(aes(x = quality.factor2, y = citric.acid), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 0.6))
+b4 <- ggplot(aes(x = quality.factor2, y = residual.sugar), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 15))
+b5 <- ggplot(aes(x = quality.factor2, y = chlorides), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.015, 0.075)) 
+b6 <- ggplot(aes(x = quality.factor2, y = free.sulfur.dioxide), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 80))
+b7 <- ggplot(aes(x = quality.factor2, y = total.sulfur.dioxide), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(20, 300))
+b8 <- ggplot(aes(x = quality.factor2, y = density), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.987, 1.002))
+b9 <- ggplot(aes(x = quality.factor2, y = pH), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(2.8, 3.6))
+b10 <- ggplot(aes(x = quality.factor2, y = sulphates), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA) +
+  coord_cartesian(ylim = c(0.15, 0.8))
+b11 <- ggplot(aes(x = quality.factor2, y = alcohol), data = wine) +
+  geom_boxplot(aes(fill = quality.factor2), outlier.shape = NA)
+grid.arrange(b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11)
+```
+
+As assumed, current visualization made even clear relatinship betweeb alcohol and quality. There is also a small evidence of negative correlation between density, chlorides and total sulfur dioxide. All other features seems not to be important for the quality.
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+Now it's time to investigate other secrets of wine flavor and check the relationships between physicochemical properties.
+
+```{r}
+ggplot(aes(x = residual.sugar, y = alcohol), data = wine) +
+  geom_point(alpha = 1/10, color = I("orange")) + 
+  geom_smooth(method = "lm") +
+  ggtitle("Alcohol by sugar") +
+  coord_cartesian(xlim=c(0,25))
+```
+
+There is a correlation between density and sugar. And that's fair enough: sweet wines, whether moelleux (Sweet: 12-45 g/l of sugar) or liquoreux (Fortified: >45 g/l sugar) wines are where the fermentation is interrupted before all the grape sugars are converted into alcohol: this is called Mutage or fortification[1]. That means sweeter the wine (more sugar in the wine) - less alcohol.
+
+```{r}
+ggplot(aes(x = residual.sugar, y = density), data = wine) + 
+  geom_point(alpha = 1/10, color = I("orange"))+
+  ggtitle("Density by sugar") +
+  geom_smooth(method = "lm") +
+  coord_cartesian(xlim=c(0,25))
+
+```
+There is a strong correlation between sugar and density. Seems that sweet wine have higher density and vice versa. Good to know.
+
+```{r}
+ggplot(aes(x = residual.sugar, y = total.sulfur.dioxide), data = wine) + 
+  geom_point(alpha = 1/10, color = I("orange"))+
+  ggtitle("Sulfur dioxide by sugar") +
+  geom_smooth(method = "lm") +
+  coord_cartesian(xlim=c(0,20))
+```
+
+There is also quite a strong correlation between SO2 and sugar. That's because SO2, sulphur dioxide, plays a protective role in the wine against the phenomena of oxidation, oxidase enzyme action (enzymes that oxidize the polyphenols in wine), and the control of microbial populations in yeasts and bacteria (antiseptic effect). The maximum allowable doses depend on the sugar content of the wine: the residual sugar is susceptible to attack by microorganisms which would cause a restart of fermentation.[1]
+
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+Flavor related relationships which is good to know if you're not a sommellier.
+
+### What was the strongest relationship you found?
+Sugar and density
+
+
+
+
+# Multivariate Plots Section
+
+```{r echo=FALSE, Multivariate_Plots}
+ggplot(aes(y = density, x = residual.sugar), data = wine) +
+  geom_point(aes(color = quality.factor2, reverse = T), alpha = 1/5) + 
+  coord_cartesian(xlim = c(0,22)) +
+  ggtitle("Sugar by density and quality")
+
+ggplot(aes(x=pH, y = fixed.acidity), data = wine) + 
+  geom_smooth(method='lm') +
+  geom_point(alpha = 1/5, aes(color = quality.factor2)) + 
+  ggtitle("Fixed acidity by pH and quality")
+
+```
+
+It looks like the better quality wines have lower density with the same sweetness of the wine. There is a negative correlation between Fixed acidity and pH but seems there is no clear influence on quality factor. 
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+The better wine is the lower density it has with the same level of sweetness.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+Based on the exploratory data analysis, the linear regression model doesn't provide any meaningful data.
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+ggplot(aes(x=quality.factor2, y  = alcohol), data = wine) + 
+  geom_boxplot(aes(fill = quality.factor2))
+```
+
+### Description One
+That's a surprising outcome but it's tend to be that experts give higher scores to the wine with higher volume of alcohol.
+
+### Plot Two and Three
+```{r echo=FALSE, Plot_Two}
+q1 <- ggplot(aes(x=residual.sugar, y = density), data = wine) + 
+  geom_point(aes(color = quality.factor2)) + 
+  coord_cartesian(xlim = c(0,25), ylim = c(0.985,1.005)) +
+  ggtitle("Density by sugar and quality")
+q2 <- ggplot(aes(x = density), data = wine) + 
+  geom_density(aes(fill = quality.factor2), alpha = 1/3)+
+  coord_cartesian(xlim=c(0.985,1.005)) + 
+  xlab("Density, g / dm^3") + 
+  ylab("") +
+  ggtitle("Density by quality")
+grid.arrange(q1,q2,ncol=2)
+```
+
+### Description Two
+Better wine tends to have less density
+
+------
+
+# Reflection
+Working on the beautiful diamond dataset in the class, I hope to find the linear model for wine quality as well. It would be a great deal for me as a hotel manager who should be able to choose good wine for the reasonable price not being a sommelier.
+Now I'm highly motivated to dig into next course and find the algorithm to predict the quality of wine.
+Still, I got something from this analysis:
+* Good wine tend to have more alcohol. Alcohol probably creates the flavor or sugar (as an alternative to alcohol) kills it
+* Good wine tend to have lower density. Again that might be because of sugar (density increases with the increase of sugar) or SO2. As we know from the description, everyone uses SO2 but too much of it might harm the wine and increase density
+
+Limitations of the study
+It's important to identify and acknowledge the limitation of the study.
+Correlation doesn't imply causation. My conclusions are based just on the provided data set. To get the real causation, I should conduct the controlled experiment which is most probably not possible.
+Using sample instead of the population. Our data set represent just several thousands wine from particular region.
+Measures used to collect the data. The quality review is a person opinion of the particular sommelier.
+
+# References:
+1. White wine: https://en.wikipedia.org/wiki/White_wine
